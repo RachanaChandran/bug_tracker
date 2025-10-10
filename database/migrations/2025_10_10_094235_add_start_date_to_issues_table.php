@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('issues', function (Blueprint $table) {
-            $table->foreignId('user_id')->constrained()->onDelete('cascade')->after('status');
+            $table->date('start_date')->nullable()->after('assigned_to');
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('issues', function (Blueprint $table) {
+            $table->dropColumn('start_date');
+        });
     }
 };
