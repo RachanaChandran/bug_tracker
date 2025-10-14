@@ -104,11 +104,11 @@
               searchable:false,
               render:function(data,type,row){
                 let buttons = '';
-                if(row.file != null){
-                    buttons += `
-                        <img src="{{ asset('storage/uploads/'.'${row.file}') }}" alt="img" height="50px" width="50px" 
-                        data-bs-toggle="modal" data-bs-target="#imageModal" class="img-thumbnail" style="cursor:pointer" onclick="viewAttachment('{{ asset('storage/uploads/'.'${row.file}') }}')">`
-                    }
+                // if(row.file != null){
+                //     buttons += `
+                //         <img src="{{ asset('storage/uploads/'.'${row.file}') }}" alt="img" height="50px" width="50px" 
+                //         data-bs-toggle="modal" data-bs-target="#imageModal" class="img-thumbnail" style="cursor:pointer" onclick="viewAttachment('{{ asset('storage/uploads/'.'${row.file}') }}')">`
+                //     }
                 buttons += `<a href="edit/${data}" class="btn btn-secondary">Edit</a>&nbsp`
                 buttons += `<a href="comment/${data}" class="btn btn-secondary">comments</a>`
                 buttons +=`@can('isAdmin',auth()->user()->name)

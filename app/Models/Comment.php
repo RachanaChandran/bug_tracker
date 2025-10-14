@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $guarded = [];
+    protected $fillable = ['issue_id','user_id','comment','image'];
     public function issue(){
         return $this->belongsTo(Issue::class,'issue_id');
     }

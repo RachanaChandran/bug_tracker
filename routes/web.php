@@ -19,6 +19,8 @@ Route::post('/update/{id}', [AdminController::class, 'update'])->name('update');
 Route::get('/statuslog',[AdminController::class,'statusLog'])->name('statuslog');
 
 Route::get('/comment/{id}',[AdminController::class,'comment'])->name('comment');
+Route::post('/comment/add/{id}',[AdminController::class,'addComment'])->name('comment.add');
+Route::post('/comment/update',[AdminController::class,'updateComment'])->name('comment.update');
 
 Route::get('/statuslog/getdata',[AdminController::class,'statusGetData'])->name('logs.getdata');
 Route::delete('/delete/{id}',[AdminController::class,'delete']);

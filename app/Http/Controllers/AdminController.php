@@ -79,16 +79,15 @@ class AdminController extends Controller
                 'start_date.required'=>'startin date required'
             ]
         );
-        // dd($validated);
-
-        if($request->hasFile('file')){
+       if($request->hasFile('file')){
             $file = $request->file('file');
             $extension = $file->extension();
             $filename = "Image".time().".".$extension;
             $path = $request->file('file')->storeAs('uploads',$filename,'public');
             $inputs['file'] = $filename;
         }
-    //    dd($inputs);
+        $inputs['user_id'] = auth()->user()->id;
+        // dd($inputs);
         Issue::create($inputs);
         $issue = Issue::latest()->first();
         // dd($issue->assigned_to);
@@ -99,16 +98,24 @@ class AdminController extends Controller
             'old_status'=>$request->status,
             'new_status'=>$request->status,
         ]);
-        $data = [
+        
+            $data = [
             'issue_id'=>$issue->id,
             'user_id'=>auth()->user()->id,
-            'comment'=>$request->comment,
-        ];
-        if($request->hasfile('image')){
-            $data['image'] = $filename;
-        }
+            'comment'=>$request->comment
+            ];
         
-        Comment::create($data);
+            if($request->hasFile('file')){
+                $file = $request->file('file');
+                $extension = $file->extension();
+                $filename = "Image".time().".".$extension;
+                $path = $request->file('file')->storeAs('uploads',$filename,'public');
+                $data['image'] = $filename;
+            }
+        
+            Comment::create($data);
+        
+        
         return redirect()->route('dashboard')->with('message', 'issue added successfully');
     }
     public function view($id){
@@ -130,14 +137,12 @@ class AdminController extends Controller
         $validated = $request->validate(
             [
                 'bug' => 'required',
-                'comment' => 'required',
                 'status' => 'required',
                 'hours'=>'required',
                 'start_date'=>'required',
             ],
             [
                 'bug.required' => 'please add bugs/issues',
-                'comment.required' => 'please add a comment',
                 'status.required' => 'please include status',
                 'hours.required'=>'please include hours',
                 'start_date.required'=>'startin date required'
@@ -145,16 +150,13 @@ class AdminController extends Controller
         );
         // dd($validated);
         if($request->hasFile('file')){
-            // if ($issue->file && Storage::disk('public')->exists($issue->file)) {
-            //     Storage::disk('public/uploads')->delete($issue->file);
-            // }
-            // dd("ggfd");
             $file = $request->file('file');
             $extension = $file->extension();
             $filename = "Image".time().".".$extension;
             $path = $request->file('file')->storeAs('uploads',$filename,'public');
             $inputs['file'] = $filename;
         }
+        $inputs['user_id'] = auth()->user()->id;
         $issue->update($inputs);
         $statuslog = StatusLog::where('issue_id',$issue->id)->latest()->first();
             if($statuslog === null){
@@ -176,23 +178,21 @@ class AdminController extends Controller
             ]);
             }
             $data = [
-            'issue_id'=>$issue->id,
-            'user_id'=>auth()->user()->id,
-            'comment'=>$request->comment,
+                'issue_id'=>$issue->id,
+                'user_id'=>auth()->user()->id,
+                'comment'=>$issue->comment
             ];
-            if($request->hasfile('image')){
+        
+            if($request->hasFile('file')){
+                $file = $request->file('file');
+                $extension = $file->extension();
+                $filename = "Image".time().".".$extension;
+                $path = $request->file('file')->storeAs('uploads',$filename,'public');
                 $data['image'] = $filename;
             }
-            
-            Comment::create($data);
+        $comment = Comment::where('issue_id',$issue->id)->where('user_id',$issue->user_id)->update($data);
+         
         
-        // if($statuslog->user_id != auth()->user()->id){
-        //     StatusLog::create(attributes: [
-        //         'issue_id'=>$issue->id,
-        //         'user_id'=> auth()->user()->id,
-        //         'old_status'=> $request->status,
-        //     ]);
-        // }
         return redirect()->route('dashboard')->with('message', 'issue updated successfully');
     }
     public function delete($id){
@@ -221,7 +221,38 @@ class AdminController extends Controller
     }
     public function comment($id){
         $comments = Comment::where('issue_id',$id)->with('issue','user')->get();
-        return view('comments',compact('comments'));
+        return view('comments',compact('comments','id'));
+    }
+    public function addComment(Request $request,$id){
+        $inputs = $request->all();
+        $request->validate([
+            'comment'=>'required',
+        ]);
+       
+        $data = [
+            'issue_id'=>$id,
+            'user_id'=>auth()->user()->id,
+            'comment'=>$request->comment,
+        ];
+        if($request->hasFile('file')){
+            $file = $request->file('file');
+            $extension = $file->extension();
+            $filename = "Image".time().".".$extension;
+            $path = $request->file('file')->storeAs('uploads',$filename,'public');
+            $data['image'] = $filename;
+        }
+        Comment::create($data);
+        return redirect()->route('comment',compact('id'));
+    }
+    public function updateComment(Request $request){
+        $inputs = $request->all();
+        $comment = Comment::find($request->id);
+        $comment->update([
+            'comment'=>$request->comment,
+            
+        ]);
+        $id = $request->id;
+        return redirect()->route('comment',compact('id'));
     }
     public function logout(){
         Auth::logout();

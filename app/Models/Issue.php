@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Issue extends Model
 {
-    protected $fillable = ['bug', 'comment', 'file', 'status','assigned_to','start_date','hours','priority'];
+    protected $fillable = ['bug','comment','user_id','file', 'status','assigned_to','start_date','hours','priority'];
     // public function assignedUser(){
     //     return $this->hasOne(User::class,'id','assigned_to');
     // }
