@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Comment;
 use App\Models\Issue;
 use App\Models\StatusLog;
 use App\Models\User;
@@ -79,6 +80,7 @@ class AdminController extends Controller
             ]
         );
         // dd($validated);
+
         if($request->hasFile('file')){
             $file = $request->file('file');
             $extension = $file->extension();
@@ -89,12 +91,24 @@ class AdminController extends Controller
     //    dd($inputs);
         Issue::create($inputs);
         $issue = Issue::latest()->first();
+        // dd($issue->assigned_to);
         StatusLog::create([
             'issue_id'=>$issue->id,
             'user_id'=>auth()->user()->id,
-            'old_status'=>$request->status
-
+            'assigned_to'=>$issue->assigned_to,
+            'old_status'=>$request->status,
+            'new_status'=>$request->status,
         ]);
+        $data = [
+            'issue_id'=>$issue->id,
+            'user_id'=>auth()->user()->id,
+            'comment'=>$request->comment,
+        ];
+        if($request->hasfile('image')){
+            $data['image'] = $filename;
+        }
+        
+        Comment::create($data);
         return redirect()->route('dashboard')->with('message', 'issue added successfully');
     }
     public function view($id){
@@ -142,16 +156,36 @@ class AdminController extends Controller
             $inputs['file'] = $filename;
         }
         $issue->update($inputs);
-        // dd($issue->status,$request->status);
-        $statuslog = StatusLog::where('issue_id',$id)->first();
-       
-        if($statuslog->old_status != $request->status && $statuslog->user_id === auth()->user()->id){
-            StatusLog::where('issue_id',$id)->update(attributes: [
+        $statuslog = StatusLog::where('issue_id',$issue->id)->latest()->first();
+            if($statuslog === null){
+                StatusLog::create([
                 'issue_id'=>$issue->id,
                 'user_id'=> auth()->user()->id,
+                'assigned_to'=>$request->assigned_to,
+                'old_status'=>$request->status,
                 'new_status'=> $request->status,
             ]);
-        }
+            }
+            elseif($statuslog->new_status != $request->status){
+                StatusLog::create([
+                'issue_id'=>$issue->id,
+                'user_id'=> auth()->user()->id,
+                'assigned_to'=>$request->assigned_to,
+                'old_status'=>$statuslog->new_status,
+                'new_status'=> $request->status,
+            ]);
+            }
+            $data = [
+            'issue_id'=>$issue->id,
+            'user_id'=>auth()->user()->id,
+            'comment'=>$request->comment,
+            ];
+            if($request->hasfile('image')){
+                $data['image'] = $filename;
+            }
+            
+            Comment::create($data);
+        
         // if($statuslog->user_id != auth()->user()->id){
         //     StatusLog::create(attributes: [
         //         'issue_id'=>$issue->id,
@@ -164,7 +198,30 @@ class AdminController extends Controller
     public function delete($id){
         $issue = Issue::find(id: $id);
         $issue->delete();
+        $statuslogs = StatusLog::where('issue_id',$id)->delete();
         return redirect()->route('dashboard')->with('delete','issue deleted successfully');
+    }
+    public function statusLog(){
+        return view('statuslogs');
+    }
+    public function statusGetData(){
+        $statuslogs = StatusLog::with('issue','user','assignedTo')->get()->map(function($statuslogs){
+            return [
+                'issue'=> optional($statuslogs->issue)->bug,
+                'user'=> optional($statuslogs->user)->name,
+                'assignedto'=>optional($statuslogs->assignedTo)->name,
+                'old_status'=> $statuslogs->old_status,
+                'new_status'=>$statuslogs->new_status
+            ];
+        });
+        // dd($statuslogs);
+        return response()->json([
+            'data'=>$statuslogs
+        ]);
+    }
+    public function comment($id){
+        $comments = Comment::where('issue_id',$id)->with('issue','user')->get();
+        return view('comments',compact('comments'));
     }
     public function logout(){
         Auth::logout();

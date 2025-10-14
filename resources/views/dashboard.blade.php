@@ -25,20 +25,25 @@
     @can('istester',arguments: auth()->user())
     <a href="{{route('add.issue')}}" class="btn btn-info float-end">Add Issue</a>
     @endcan
+    @can('isAdmin',auth()->user())
+    <a href="{{route('statuslog')}}" class="btn btn-secondary float-end">Status Log</a>
+    @endcan
     <form action="{{ route('logout') }}" method="post" style="display:inline;float:end">
     @csrf
     <button type="submit" class="btn btn-danger btn-sm">Logout</button>
     </form>
+
     <table class="table table-bordered table-striped display" width="100%" id="issueTable">
         <thead>
             <tr>
                 <th>NO.</th>
                 <th>issue</th>
-                <th>comment</th>
+                <!-- <th width="10%">comment</th> -->
                 <th>Assigned To</th>
                 <th>Start Date</th>
-                <th>Hours For Completion</th>
+                <th width="10%">Hours For Completion</th>
                 <th>status</th>
+                <th>Priority</th>
                 <th>actions</th>
             </tr>
         </thead>
@@ -62,7 +67,7 @@
             }
             },
             {data: 'bug'},
-            {data: 'comment'},
+            // {data: 'comment'},
             {data:'assigned_to',
                 render:function(data,type,row){
                     if (data === 1) {
@@ -92,16 +97,21 @@
                 }
 
             },
+            {data:'priority'},
             {data:'id',
               name:'action',
               orderable:false,
               searchable:false,
               render:function(data,type,row){
-                return `
-                <img src="{{ asset('storage/uploads/'.'${row.file}') }}" alt="img" height="50px" width="50px" 
-        data-bs-toggle="modal" data-bs-target="#imageModal" class="img-thumbnail" style="cursor:pointer" onclick="viewAttachment('{{ asset('storage/uploads/'.'${row.file}') }}')">
-                <a href="edit/${data}" class="btn btn-secondary">Edit</a>
-                @can('isAdmin',auth()->user()->name)
+                let buttons = '';
+                if(row.file != null){
+                    buttons += `
+                        <img src="{{ asset('storage/uploads/'.'${row.file}') }}" alt="img" height="50px" width="50px" 
+                        data-bs-toggle="modal" data-bs-target="#imageModal" class="img-thumbnail" style="cursor:pointer" onclick="viewAttachment('{{ asset('storage/uploads/'.'${row.file}') }}')">`
+                    }
+                buttons += `<a href="edit/${data}" class="btn btn-secondary">Edit</a>&nbsp`
+                buttons += `<a href="comment/${data}" class="btn btn-secondary">comments</a>`
+                buttons +=`@can('isAdmin',auth()->user()->name)
                 <form action="delete/${data}" method="POST" style="display:inline-block">
                   @csrf
                   @method('DELETE')
@@ -109,8 +119,11 @@
                 </form>
                 @endcan
                 `
+                
+                return buttons
               }
-            }
+            },
+            
          ],
         dom: 'Brtip',
         buttons: [
@@ -147,7 +160,7 @@
     // alert(url);
     document.getElementById('modalImage').src = url;
     // $('#imageModal').attr('src')
-}
+    }
 </script>
 </body>
 </html>
