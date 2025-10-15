@@ -224,6 +224,7 @@ class AdminController extends Controller
         return view('comments',compact('comments','id'));
     }
     public function addComment(Request $request,$id){
+        $comments = Comment::where('issue_id',$id)->with('issue','user')->get();
         $inputs = $request->all();
         $request->validate([
             'comment'=>'required',
@@ -242,17 +243,18 @@ class AdminController extends Controller
             $data['image'] = $filename;
         }
         Comment::create($data);
-        return redirect()->route('comment',compact('id'));
+        return redirect()->route('comment',compact('id','comments'));
     }
     public function updateComment(Request $request){
+        $comments = Comment::where('issue_id',$request->issue_id)->with('issue','user')->get();
         $inputs = $request->all();
         $comment = Comment::find($request->id);
         $comment->update([
             'comment'=>$request->comment,
             
         ]);
-        $id = $request->id;
-        return redirect()->route('comment',compact('id'));
+        $id = $request->issue_id;
+        return redirect()->route('comment',compact('comments','id'));
     }
     public function logout(){
         Auth::logout();

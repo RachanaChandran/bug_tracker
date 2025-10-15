@@ -18,7 +18,7 @@
                 
                     @foreach($comments as $comment)
                         <div>
-                            <h6 class="fw-bold text-primary mb-1">{{ strtoupper($comment->user->name) }} </h6><i class="bi bi-pencil" style="font-size: 0.8em;cursor:pointer" data-bs-toggle="modal" data-bs-target="#commentModal" onclick="viewComment({{ $comment->id }})"></i>
+                            <h6 class="fw-bold text-primary mb-1">{{ strtoupper($comment->user->name) }} </h6><i class="bi bi-pencil" id="editsymbol" style="font-size: 0.8em;cursor:pointer" data-bs-toggle="modal" data-bs-target="#commentModal" onclick="viewComment({{ $comment->id }})" data-issue-id = "{{ $id }}" data-comment="{{ $comment->comment }}"></i>
                             <p class="text-muted small mb-0">
                             {{ $comment->created_at->diffForHumans() }}
                             </p>
@@ -79,6 +79,7 @@
       <form method="POST" action="{{ route('comment.update') }}">
         @csrf
         <input type="hidden" name="id" id="commentId">
+        <input type="hidden" name="issue_id" id="issueId">
         <div class="modal-header">
           <h5 class="modal-title" id="formModalLabel">change comment</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -103,6 +104,12 @@
     
     function viewComment(id){
         document.getElementById('commentId').value=id;
+        var editsymbol = document.getElementById('editsymbol');
+        var id = editsymbol.getAttribute('data-issue-id');
+        var comment = editsymbol.getAttribute('data-comment');
+        // alert(comment);
+        document.getElementById('issueId').value=id;
+        // document.getElementById('comment').value=comment;
     }
     function viewImage(url){
         document.getElementById('modalImage').src = url;
