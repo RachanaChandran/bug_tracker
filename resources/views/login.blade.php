@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="bg-custom d-flex justify-content-center align-items-center">
-        <form action="{{route('login')}}" method="POST" class=" p-4 mb-3 border shadow-sm bg-white mx-auto" style="width:500px">
+        <form action="{{route('login.post')}}" method="POST" class=" p-4 mb-3 border shadow-sm bg-white mx-auto" style="width:500px">
             @csrf
             <h2 class="text-primary text-center">Login Here</h2>
                 <div>

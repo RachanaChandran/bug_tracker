@@ -4,10 +4,10 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
-//     return view('welcome');
+//     return view(view: 'login');
 // });
-Route::get('/login', [AdminController::class, 'index']);
-Route::post('/login', [AdminController::class, 'login'])->name('login');
+Route::get('/', [AdminController::class, 'index'])->name('login');
+Route::post('/login', [AdminController::class, 'login'])->name('login.post');
 Route::get('add/issue', [AdminController::class, 'add'])->name('add.issue');
 Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 Route::get('/dashboard/getdata', [AdminController::class, 'getData'])->name('dashboard.getdata');

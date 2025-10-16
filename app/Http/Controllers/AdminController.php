@@ -251,7 +251,6 @@ class AdminController extends Controller
         $comment = Comment::find($request->id);
         $comment->update([
             'comment'=>$request->comment,
-            
         ]);
         $id = $request->issue_id;
         return redirect()->route('comment',compact('comments','id'));
